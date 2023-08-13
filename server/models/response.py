@@ -12,7 +12,7 @@ class ResponseStatus(BaseModel):
 class ResponseChat(BaseModel):
     # data: ChatCompletion
     
-	class ConfigDict: # pylint: disable=too-few-public-methods
+	class Config: # pylint: disable=too-few-public-methods
 		"""A message to send to the chatbot."""
 		json_schema_extra = {
 			"example": {
