@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - master  # or the name of your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # or your preferred Node.js version
+
+    - name: Install Vercel CLI
+      run: npm install -g vercel
+
+    - name: Deploy to Vercel
+      run: vercel . --token ${{ secrets.VERCEL_TOKEN }} --confirm  # You might need the --confirm flag if you haven't set up the project yet
+      env:
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

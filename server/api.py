@@ -1,50 +1,48 @@
-from fastapi import FastAPI, Request
-from fastapi.templating import Jinja2Templates
-from typing import Any, Optional
-from pydantic import BaseModel, Field
+"App Entrypoint"
+import logging
 import openai
 import os
 
-app = FastAPI()
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.templating import Jinja2Templates
+
+from server.models.request import Message
+from server.models.response import ResponseStatus, ResponseChat
+
+app = FastAPI(title="🤖 Prompt Engineers AI - Serverless Chat")
 os.environ.get('OPENAI_API_KEY')
 templates = Jinja2Templates(directory="static")
+logger = logging.getLogger("uvicorn.error")
 
 #######################################################################
 ###  Pages
 #######################################################################
-@app.get("/", tags=["Pages"])
+@app.get("/", tags=["Pages"], include_in_schema=False)
 async def chat_interface(request: Request):
     """Serves the index page."""
     return templates.TemplateResponse(
         "pages/index.html", 
         {"request": request, "current_page": "home"}
     )
+    
+#######################################################################
+###  Status Endpoints
+#######################################################################
+@app.get("/status", tags=["Status"], response_model=ResponseStatus)
+async def get_application_version():
+    """Check the application status."""
+    try:
+        return {
+			"version": os.getenv("APP_VERSION", ''),
+		}
+    except Exception as err:
+        logger.exception(err)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
-#################################################
-## ChatGPT
-#################################################
-class Message(BaseModel): # pylint: disable=too-few-public-methods
-    """A message to send to the chatbot."""
-    model: Optional[str] = None
-    messages: Optional[Any] = None
-    temperature: Optional[float or int] = None
-
-    class Config: # pylint: disable=too-few-public-methods
-        """A message to send to the chatbot."""
-        json_schema_extra = {
-            "example": {
-    			"model": "gpt-3.5-turbo",
-       		 	"temperature": 0.8,	
-                "messages": [
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": 'Who won the 2001 world series?'},
-					{"role": "assistant", "content": 'The arizona diamondbacks won the 2001 world series.'},
-                    {"role": "user", "content": 'Who were the pitchers?'},
-                ]
-            }
-        }
-
-@app.post("/chat", tags=["Chat"])
+#######################################################################
+###  API Endpoints
+#######################################################################
+@app.post("/chat", tags=["Chat"], response_model=ResponseChat)
 async def chat_endpoint(body: Message):
     try:
         result = openai.ChatCompletion.create(
