@@ -10,7 +10,7 @@ class Message(BaseModel): # pylint: disable=too-few-public-methods
     messages: Optional[Any] = None
     temperature: Optional[float or int] = None
 
-    class Config: # pylint: disable=too-few-public-methods
+    class ConfigDict: # pylint: disable=too-few-public-methods
         """A message to send to the chatbot."""
         json_schema_extra = {
             "example": {

@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class ResponseStatus(BaseModel):
-    version: str = Field(example='v0.0.15')
+    version: str = Field(default='v0.0.15')
     
 #################################################
 ## ChatGPT
@@ -12,7 +12,7 @@ class ResponseStatus(BaseModel):
 class ResponseChat(BaseModel):
     # data: ChatCompletion
     
-	class Config: # pylint: disable=too-few-public-methods
+	class ConfigDict: # pylint: disable=too-few-public-methods
 		"""A message to send to the chatbot."""
 		json_schema_extra = {
 			"example": {
