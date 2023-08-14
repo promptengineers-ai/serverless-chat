@@ -11,14 +11,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Cache global npm modules
-      uses: actions/cache@v3
-      with:
-        path: /usr/local/lib/node_modules
-        key: npm-global-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          npm-global-modules-${{ runner.os }}-
-
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
