@@ -1,16 +1,20 @@
 "App Entrypoint"
 import logging
 import openai
+import json
 import os
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 
-from server.models.request import Message
-from server.models.response import ResponseStatus, ResponseChat
+from server.models.request import ReqBodyChat
+from server.models.response import ResponseStatus, ResponseChat, ResponseChatStream
+from server.services.message_service import send_openai_message, send_openai_message_stream
+from server.utils import logger
 
 app = FastAPI(title="🤖 Prompt Engineers AI - Serverless Chat")
-os.environ.get('OPENAI_API_KEY')
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 templates = Jinja2Templates(directory="static")
 logger = logging.getLogger("uvicorn.error")
 
@@ -41,20 +45,51 @@ async def get_application_version():
 
 #######################################################################
 ###  API Endpoints
-#######################################################################
+# #######################################################################
 @app.post("/chat", tags=["Chat"], response_model=ResponseChat)
-async def chat_endpoint(body: Message):
+async def chat(body: ReqBodyChat):
     try:
-        result = openai.ChatCompletion.create(
+        result = send_openai_message(
             model=body.model,
             messages=body.messages,
             temperature=body.temperature
         )
+        logger.debug('[POST /chat] Response: %s', str(result))
+        data = json.dumps({
+            'chat': result
+        })
+        return Response(
+            content=data,
+            media_type='application/json',
+            status_code=200
+        )
+    except HTTPException as err:
+        logger.error(err.detail)
+        raise
+    except Exception as err:
+        logger.error(err)
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred. {str(err)}"
+        )
         
-        return { 
-            "data": result
-        }
-    except Exception as e:
-        return { 
-            "error": str(e)
-        }
+#######################################################################
+###  API Endpoints
+#######################################################################
+
+    
+@app.post("/chat/stream", tags=["Chat"], response_model=ResponseChatStream)
+def chat_stream(body: ReqBodyChat):
+    """Chat endpoint."""
+    messages = body.messages or []
+    logger.debug('[POST /chat/stream] Query: %s', str(body))
+    return StreamingResponse(
+        send_openai_message_stream(
+            messages,
+            body.model,
+            body.temperature,
+            True
+        ),
+        media_type="text/event-stream"
+    )
+    

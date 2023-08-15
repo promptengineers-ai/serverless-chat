@@ -39,3 +39,9 @@ class ResponseChat(BaseModel):
 				}
 			}
 		}
+
+
+class ResponseChatStream(BaseModel):
+    sender: str = Field(default='assistant')
+    message: str = Field(default='Dialog started.')
+    type: str = Field(default='stream')

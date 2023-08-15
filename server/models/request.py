@@ -4,11 +4,11 @@ from pydantic import BaseModel, Field
 #################################################
 ## ChatGPT
 #################################################
-class Message(BaseModel): # pylint: disable=too-few-public-methods
+class ReqBodyChat(BaseModel): # pylint: disable=too-few-public-methods
     """A message to send to the chatbot."""
-    model: Optional[str] = None
-    messages: Optional[Any] = None
-    temperature: Optional[float or int] = None
+    model: str = 'gpt-3.5-turbo'
+    messages: Any = []
+    temperature: float or int = 0.0
 
     class Config: # pylint: disable=too-few-public-methods
         """A message to send to the chatbot."""
