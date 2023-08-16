@@ -5,6 +5,7 @@ import json
 import os
 
 from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 
@@ -17,6 +18,16 @@ app = FastAPI(title="🤖 Prompt Engineers AI - Serverless Chat")
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 templates = Jinja2Templates(directory="static")
 logger = logging.getLogger("uvicorn.error")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:9000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #######################################################################
 ###  Pages
@@ -76,8 +87,6 @@ async def chat(body: ReqBodyChat):
 #######################################################################
 ###  API Endpoints
 #######################################################################
-
-    
 @app.post("/chat/stream", tags=["Chat"], response_model=ResponseChatStream)
 def chat_stream(body: ReqBodyChat):
     """Chat endpoint."""
