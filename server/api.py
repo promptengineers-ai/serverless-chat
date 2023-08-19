@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 
-from server.models.request import ReqBodyChat
+from server.models.request import ReqBodyChat, ReqBodyFunctionChat
 from server.models.response import ResponseStatus, ResponseChat, ResponseChatStream
-from server.services.message_service import send_openai_message, send_openai_message_stream
+from server.services.message_service import send_openai_message, send_openai_message_stream, send_functions_message
 from server.utils import logger
 
 app = FastAPI(title="🤖 Prompt Engineers AI - Serverless Chat")
@@ -102,3 +102,19 @@ def chat_stream(body: ReqBodyChat):
         media_type="text/event-stream"
     )
     
+#######################################################################
+###  API Endpoints
+#######################################################################
+@app.post("/chat/stream/functions", tags=["Chat"], response_model=ResponseChatStream)
+def chat_functions_stream(body: ReqBodyFunctionChat):
+    """Chat endpoint."""
+    logger.debug('[POST /chat/stream/functions] Query: %s', str(body))
+    return StreamingResponse(
+        send_functions_message(
+            body.messages,
+            body.model,
+            body.temperature,
+            body.functions,
+        ),
+        media_type="text/event-stream"
+    )

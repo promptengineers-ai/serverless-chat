@@ -38,3 +38,17 @@ def retrieve_chat_messages(messages):
     return [
         (msg["content"]) for msg in messages if msg["role"] in ["user", "assistant"]
     ]
+    
+def match_strings(keys: list[str], functions):
+    # Initialize array to store output
+    output = []
+
+    # Loop through the functions array
+    for function in functions:
+        # If name property of function matches one of the strings in keys
+        if function['name'] in keys:
+            # Append the function to the output array
+            output.append(function)
+    
+    # Return the output array
+    return output
