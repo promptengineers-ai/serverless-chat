@@ -14,4 +14,15 @@ class FunctionTypeFactory:
             return function_to_call(
 			    word=function_args.get("word"),
 			)
+            
+        if fn_type == "create_event":
+            function_to_call = AVAILABLE_FUNCTIONS[fn_type]
+            return function_to_call(
+                title=function_args.get("title"),
+                start=function_args.get("start"),
+                end=function_args.get("end"),
+                bgColor=function_args.get("bgColor", None),
+                location=function_args.get("location", ""),
+                description=function_args.get("description", "")
+            )
         raise ValueError("Invalid Function type.")
